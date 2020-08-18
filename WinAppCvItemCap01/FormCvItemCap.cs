@@ -590,8 +590,8 @@ namespace WinAppCvItemCap01
 
                 //将画上框框的结果
                 //if (!bDetectLines) //如果不检测线条斜率才画，节约1次Convert
-                //    bitmap = BitmapConverter.ToBitmap(matDataMatrixSrc);
                 bitmap = BitmapConverter.ToBitmap(matDataMatrixSrc);
+
 
                 //如果需要检测二维码则调用
                 if (bStartFindDmCode)
@@ -607,153 +607,163 @@ namespace WinAppCvItemCap01
                 /*==============================================================================*/
                 /*==============================================================================*/
 
-                //如果不需要检测线条则不执行下面的代码
-                if (!bDetectLines)
-                    continue;
-
-                /*
-                // 转换颜色空间，可以转化为yuv，下面是转化为灰度图
-                Cv2.CvtColor(matSrc, matGaussianBlur, ColorConversionCodes.BGR2GRAY); //原命名matGray，先改为matGaussianBlur节约一个
-
-                //// v1原来简单二值化的内容
-                ////二值化:参数3为阈值，4为大于阈值的像素灰度值，5为二值化类型
-                ////threshold(lenaColor, lenaBinary, 145, 225, THRESH_BINARY);//原来的阈值设定                
-                //double dThreshould = 70;
-                //double dMaxVal = 235;
-                //Cv2.Threshold(matGray, dst, dThreshould, dMaxVal, ThresholdTypes.Binary);
-                //Bitmap bitmap = BitmapConverter.ToBitmap(dst);
-
-                //高斯模糊
-                OpenCvSharp.Size gSizeGaussianBlur = new OpenCvSharp.Size(5, 5);
-                Cv2.GaussianBlur(matGaussianBlur, matGaussianBlur, gSizeGaussianBlur, 0, 0);
-                //边缘检测，设置好灰度范围
-                int iThreshouldLow = 100;
-                int iThreshouldHigh = 225;
-                Cv2.Canny(matGaussianBlur, matCanny, iThreshouldLow, iThreshouldHigh);
-                //霍夫变换
-                //List<Vec4i> lines = new List<Vec4i>();                
-                int rho = 1;
-                int threshold = 30;
-                double theta = Cv2.PI / 180;
-                int min_line_len = 50;
-                int max_line_gap = 20;
-                LineSegmentPoint[] linepoints = Cv2.HoughLinesP(matCanny, rho, theta, threshold, min_line_len, max_line_gap);
-                ////简单的车道线拟合
-                matHoughLines = Mat.Zeros(matCanny.Size(), MatType.CV_8UC3);
-
-                //原来的 bitmap = BitmapConverter.ToBitmap(matSrc); 改为画了DataMatrix码框的Source
-                //bitmap = BitmapConverter.ToBitmap(matSrc);
-                bitmap = BitmapConverter.ToBitmap(matDataMatrixSrc);
-                Graphics objGraph = Graphics.FromImage(bitmap);
-                ////遍历二维直线数组 -- 原调试用
-                //for (int i = 0; i < linepoints.Length; i++)
-                //{
-                //    objGraph.DrawLine(new Pen(Color.Red), new System.Drawing.Point(linepoints[i].P1.X, linepoints[i].P1.Y), new System.Drawing.Point(linepoints[i].P2.X, linepoints[i].P2.Y));
-                //}
-                //List<int> iTopLengthLines = new List<int>();
-
-                List<LineSegmentPoint> listLineSegmentPoints = new List<LineSegmentPoint>();
-                if (linepoints.Length == 0) //如果没有找到，则退出
+                //如果需要检测线条则执行下面的代码
+                if (bDetectLines)
                 {
-                    if (bShowPic)
+
+                    //开始执行线条检测，画线=========================================================//
+                    // 转换颜色空间，可以转化为yuv，下面是转化为灰度图
+                    Cv2.CvtColor(matSrc, matGaussianBlur, ColorConversionCodes.BGR2GRAY); //原命名matGray，先改为matGaussianBlur节约一个
+
+                    //// v1原来简单二值化的内容
+                    ////二值化:参数3为阈值，4为大于阈值的像素灰度值，5为二值化类型
+                    ////threshold(lenaColor, lenaBinary, 145, 225, THRESH_BINARY);//原来的阈值设定                
+                    //double dThreshould = 70;
+                    //double dMaxVal = 235;
+                    //Cv2.Threshold(matGray, dst, dThreshould, dMaxVal, ThresholdTypes.Binary);
+                    //Bitmap bitmap = BitmapConverter.ToBitmap(dst);
+
+                    //高斯模糊
+                    OpenCvSharp.Size gSizeGaussianBlur = new OpenCvSharp.Size(5, 5);
+                    Cv2.GaussianBlur(matGaussianBlur, matGaussianBlur, gSizeGaussianBlur, 0, 0);
+                    //边缘检测，设置好灰度范围
+                    int iThreshouldLow = 100;
+                    int iThreshouldHigh = 225;
+                    Cv2.Canny(matGaussianBlur, matCanny, iThreshouldLow, iThreshouldHigh);
+                    //霍夫变换
+                    //List<Vec4i> lines = new List<Vec4i>();                
+                    int rho = 1;
+                    int threshold = 30;
+                    double theta = Cv2.PI / 180;
+                    int min_line_len = 50;
+                    int max_line_gap = 20;
+                    LineSegmentPoint[] linepoints = Cv2.HoughLinesP(matCanny, rho, theta, threshold, min_line_len, max_line_gap);
+                    ////简单的车道线拟合
+                    matHoughLines = Mat.Zeros(matCanny.Size(), MatType.CV_8UC3);
+
+                    ////原来的 bitmap = BitmapConverter.ToBitmap(matSrc); 改为画了DataMatrix码框的Source
+                    ////bitmap = BitmapConverter.ToBitmap(matSrc);
+
+                    //原来的在Graphics上画线，注释掉20200818
+                    //bitmap = BitmapConverter.ToBitmap(matDataMatrixSrc);
+                    //Graphics objGraph = Graphics.FromImage(bitmap);
+
+                    //////遍历二维直线数组 -- 原调试用
+                    ////for (int i = 0; i < linepoints.Length; i++)
+                    ////{
+                    ////    objGraph.DrawLine(new Pen(Color.Red), new System.Drawing.Point(linepoints[i].P1.X, linepoints[i].P1.Y), new System.Drawing.Point(linepoints[i].P2.X, linepoints[i].P2.Y));
+                    ////}
+                    ////List<int> iTopLengthLines = new List<int>();
+
+                    List<LineSegmentPoint> listLineSegmentPoints = new List<LineSegmentPoint>();
+                    if (linepoints.Length == 0) //如果没有找到，则退出
                     {
-                        Invalidate();
-                        pbCameraView.Invalidate();
-                        imgshow = BitmapConverter.ToBitmap(matSrc);
-                    }
-                    continue;
-                }
-
-                int[] iTopLengthLines = new int[linepoints.Length];
-                //遍历二维直线数组
-                for (int i = 0; i < linepoints.Length; i++)
-                {
-                    double dDeltaX = Math.Abs(linepoints[i].P1.X - linepoints[i].P2.X);
-                    if (dDeltaX == 0)
-                        dDeltaX = 0.0001;
-                    double dDeltaY = Math.Abs(linepoints[i].P1.Y - linepoints[i].P2.Y);
-                    if (dDeltaY == 0)
-                        dDeltaY = 0.0001;
-                    double dSlope = dDeltaY / dDeltaX;
-
-                    if (dSlope > 1) //斜率大于1，是y轴方向的
-                    {
-                        int iLength = Math.Abs(linepoints[i].P1.X - linepoints[i].P2.X) + Math.Abs(linepoints[i].P1.Y - linepoints[i].P2.Y);
-                        iTopLengthLines[i] = iLength;
-
-                        listLineSegmentPoints.Add(linepoints[i]);
-                    }
-                    //objGraph.DrawLine(new Pen(Color.Red), new System.Drawing.Point(linepoints[i].P1.X, linepoints[i].P1.Y), new System.Drawing.Point(linepoints[i].P2.X, linepoints[i].P2.Y));
-                }
-
-                
-                int iStartX = 0;
-                int iStartY = 0;
-                int iEndX = 0;
-                int iEndY = 0;
-
-                CommonUtils.BubbleSort(iTopLengthLines, ComparerFactory.GetIntComparer());
-                int iTop = 2; //取最长的n条线
-                if (listLineSegmentPoints.Count < iTop) //如果垂直方向上没有n条线，则退出继续循环
-                    continue;
-
-                if (iTop > linepoints.Length)
-                    iTop = linepoints.Length;
-                foreach (LineSegmentPoint sline in listLineSegmentPoints)
-                {
-                    int iLength = Math.Abs(sline.P1.X - sline.P2.X) + Math.Abs(sline.P1.Y - sline.P2.Y);
-                    for (int j = linepoints.Length; j > (linepoints.Length - iTop); j--)
-                    {
-                        //等于最长的n条线长时，画线
-                        if (iTopLengthLines[j - 1] == iLength)
+                        if (bShowPic)
                         {
-                            objGraph.DrawLine(new Pen(Color.Red, 2), new System.Drawing.Point(sline.P1.X, sline.P1.Y), new System.Drawing.Point(sline.P2.X, sline.P2.Y));
-                            //计算最长n条线的平均位置
-                            if (sline.P1.Y > sline.P2.Y)
-                            {
-                                iStartX += sline.P1.X;
-                                iStartY += sline.P1.Y;
+                            Invalidate();
+                            pbCameraView.Invalidate();
+                            //imgshow = BitmapConverter.ToBitmap(matSrc); 
+                            imgshow = BitmapConverter.ToBitmap(matDataMatrixSrc);
+                        }
+                        continue;
+                    }
 
-                                iEndX += sline.P2.X;
-                                iEndY += sline.P2.Y;
-                            }
-                            else
-                            {
-                                iStartX += sline.P2.X;
-                                iStartY += sline.P2.Y;
+                    int[] iTopLengthLines = new int[linepoints.Length];
+                    //遍历二维直线数组
+                    for (int i = 0; i < linepoints.Length; i++)
+                    {
+                        double dDeltaX = Math.Abs(linepoints[i].P1.X - linepoints[i].P2.X);
+                        if (dDeltaX == 0)
+                            dDeltaX = 0.0001;
+                        double dDeltaY = Math.Abs(linepoints[i].P1.Y - linepoints[i].P2.Y);
+                        if (dDeltaY == 0)
+                            dDeltaY = 0.0001;
+                        double dSlope = dDeltaY / dDeltaX;
 
-                                iEndX += sline.P1.X;
-                                iEndY += sline.P1.Y;
+                        if (dSlope > 1) //斜率大于1，是y轴方向的
+                        {
+                            int iLength = Math.Abs(linepoints[i].P1.X - linepoints[i].P2.X) + Math.Abs(linepoints[i].P1.Y - linepoints[i].P2.Y);
+                            iTopLengthLines[i] = iLength;
+
+                            listLineSegmentPoints.Add(linepoints[i]);
+                        }
+                        //objGraph.DrawLine(new Pen(Color.Red), new System.Drawing.Point(linepoints[i].P1.X, linepoints[i].P1.Y), new System.Drawing.Point(linepoints[i].P2.X, linepoints[i].P2.Y));
+                    }
+
+
+                    int iStartX = 0;
+                    int iStartY = 0;
+                    int iEndX = 0;
+                    int iEndY = 0;
+
+                    CommonUtils.BubbleSort(iTopLengthLines, ComparerFactory.GetIntComparer());
+                    int iTop = 2; //取最长的n条线
+                    if (listLineSegmentPoints.Count < iTop) //如果垂直方向上没有n条线，则退出继续循环
+                        continue;
+
+                    if (iTop > linepoints.Length)
+                        iTop = linepoints.Length;
+                    foreach (LineSegmentPoint sline in listLineSegmentPoints)
+                    {
+                        int iLength = Math.Abs(sline.P1.X - sline.P2.X) + Math.Abs(sline.P1.Y - sline.P2.Y);
+                        for (int j = linepoints.Length; j > (linepoints.Length - iTop); j--)
+                        {
+                            //等于最长的n条线长时，画线
+                            if (iTopLengthLines[j - 1] == iLength)
+                            {
+                                Cv2.Line(matDataMatrixSrc, sline.P1, sline.P2, Scalar.Red, 2, LineTypes.Link8); //OpenCv画线
+                                                                                                                //objGraph.DrawLine(new Pen(Color.Red, 2), new System.Drawing.Point(sline.P1.X, sline.P1.Y), new System.Drawing.Point(sline.P2.X, sline.P2.Y));//原先在objGraph上的画线，注释掉
+                                                                                                                //计算最长n条线的平均位置
+                                if (sline.P1.Y > sline.P2.Y)
+                                {
+                                    iStartX += sline.P1.X;
+                                    iStartY += sline.P1.Y;
+
+                                    iEndX += sline.P2.X;
+                                    iEndY += sline.P2.Y;
+                                }
+                                else
+                                {
+                                    iStartX += sline.P2.X;
+                                    iStartY += sline.P2.Y;
+
+                                    iEndX += sline.P1.X;
+                                    iEndY += sline.P1.Y;
+                                }
                             }
                         }
                     }
-                }
 
-                iStartX = iStartX / iTop;
-                iStartY = iStartY / iTop;
-                iEndX = iEndX / iTop;
-                iEndY = iEndY / iTop;
+                    iStartX /= iTop;
+                    iStartY /= iTop;
+                    iEndX /= iTop;
+                    iEndY /= iTop;
 
-                bool bIsSkip = false;
-                int iDistanceX = 0;//x坐标距离：如果几个点的差异过大可以抛弃
-                const int iThresholdDeltaX = 60; //x差异的阈值，跟线宽相关，去掉干扰点
-                foreach (LineSegmentPoint sline in listLineSegmentPoints)
-                {
-                    if (sline.P1.Y > sline.P2.Y)
-                        iDistanceX = Math.Abs(iStartX - sline.P1.X);
-                    else
-                        iDistanceX = Math.Abs(iStartX - sline.P2.X);
-
-                    if (iDistanceX > iThresholdDeltaX)
+                    bool bIsSkip = false;
+                    int iDistanceX = 0;//x坐标距离：如果几个点的差异过大可以抛弃
+                    const int iThresholdDeltaX = 60; //x差异的阈值，跟线宽相关，去掉干扰点
+                    foreach (LineSegmentPoint sline in listLineSegmentPoints)
                     {
-                        bIsSkip = true;
-                        break;
-                    }
-                }
-                if (bIsSkip)
-                    continue;
+                        if (sline.P1.Y > sline.P2.Y)
+                            iDistanceX = Math.Abs(iStartX - sline.P1.X);
+                        else
+                            iDistanceX = Math.Abs(iStartX - sline.P2.X);
 
-                objGraph.DrawLine(new Pen(Color.Green, 5), new System.Drawing.Point(iStartX, iStartY), new System.Drawing.Point(iEndX, iEndY));
+                        if (iDistanceX > iThresholdDeltaX)
+                        {
+                            bIsSkip = true;
+                            break;
+                        }
+                    }
+                    if (bIsSkip)
+                        continue;
+
+                    Cv2.Line(matDataMatrixSrc, new OpenCvSharp.Point(iStartX, iStartY), new OpenCvSharp.Point(iEndX, iEndY), Scalar.Green, 5, LineTypes.Link8);
+                    //objGraph.DrawLine(new Pen(Color.Green, 5), new System.Drawing.Point(iStartX, iStartY), new System.Drawing.Point(iEndX, iEndY)); //原先在objGraph上的画线，注释掉
+
+                    bitmap = BitmapConverter.ToBitmap(matDataMatrixSrc);
+                    imgshow = BitmapConverter.ToBitmap(matSrc);
+                }
 
                 /*
                 int iDeltaX = iStartX - iEndX;
@@ -789,8 +799,8 @@ namespace WinAppCvItemCap01
                 */
                 //---------------------------------------------------------//
 
-                
-                //计算耗时
+
+                //计算耗时--------------------------------------------------
                 if (0 == iCount)
                     CurrentTimeStamp = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
                 else if (0 == (iCount % 300))
@@ -800,6 +810,9 @@ namespace WinAppCvItemCap01
 
                     sInfo += " , [ " + lDeltaTime + "]";
                 }
+
+
+                //重要，计数器累加
                 iCount++;
 
 
